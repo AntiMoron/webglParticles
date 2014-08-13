@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+	<title>Test ParticleGL</title>
+
+	<script type="text/javascript">
+var glContext = null;
+var programObject = null;
+var v4PositionIndex = null;
+var v4TextcoordIndex = null;
+var vertexShaderObject = null;
+var fragmentShaderObject = null;
+var screenWidth = 1400;
+var screenHeight = 1400;
+var particleDatas = [];
+var particleTexcoords = [];
+var particleNumber = 5000;
+
+function webglInit(){
+	var myCanvasObject = document.getElementById("glView");
+	var myDivObject = document.getElementById("container");
+	if(myDivObject == null)
+	{
+		console.log("get div failed.");
+	}
+	glContext = myCanvasObject.getContext("experimental-webgl");
+	if(glContext == null)
+	{
+		console.log("your browser doesn't support webgl");
+	}
+	glContext.viewport(0,0,screenWidth,screenHeight);
+	
+	glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE);
+	glContext.enable(glContext.BLEND);
+}
+function shaderInitWithVertexAndFragmentShader(vsh,fsh){
+	vertexShaderObject = glContext.createShader(glContext.VERTEX_SHADER);
+	fragmentShaderObject = glContext.createShader(glContext.FRAGMENT_SHADER);
+	glContext.shaderSource(vertexShaderObject,vsh);
+	glContext.shaderSource(fragmentShaderObject,fsh);
+	glContext.compileShader(vertexShaderObject);
+	if (!glContext.getShaderParameter(vertexShaderObject, glContext.COMPILE_STATUS)) {
+	    alert("vs : "+glContext.getShaderInfoLog(vertexShaderObject));
+	}
+	glContext.compileShader(fragmentShaderObject);
+	if (!glContext.getShaderParameter(fragmentShaderObject, glContext.COMPILE_STATUS)) {
+	    alert("fs :" + glContext.getShaderInfoLog(fragmentShaderObject));
+	}
+}
+function initShaderProgram(){
+	programObject = glContext.createProgram();
+	
+    glContext.attachShader(programObject,vertexShaderObject);
+	glContext.attachShader(programObject,fragmentShaderObject);
+	
+    glContext.linkProgram(programObject);
+	if(!glContext.getProgramParameter(programObject,glContext.LINK_STATUS)){
+		console.log(glContext.getProgramInfoLog(programObject));
+	}
+	glContext.useProgram(programObject);
+
+    glContext.bindAttribLocation(programObject,v4PositionIndex,"position");
+
+    v4TextcoordIndex = glContext.getAttribLocation(programObject,"inputTextureCoord");
+    glContext.enableVertexAttribArray(v4TextcoordIndex);
+    glContext.vertexAttribPointer(v4TextcoordIndex,2,glContext.FLOAT,false,0,0);
+}
+
+function renderWebGL(vLen){
+    glContext.clearColor(0.0,0.0,0.0,0.0);
+	glContext.clear(glContext.COLOR_BUFFER_BIT);
+	glContext.drawArrays(glContext.TRIANGLES,0,particleDatas.length / 2);
+}
+function renderCircle()
+{
+	renderWebGL();
+}
+
+function InitializeAllData()
+{
+    var vsh =
+        "attribute vec4 position;" +
+        "attribute vec2 inputTextureCoord;"+
+        "varying vec2 vTextureCoord;" +
+        "void main()" +
+        "{" +
+        "    gl_Position = position;" +
+        "    vTextureCoord = inputTextureCoord;" +
+        "}";
+    var fsh =
+    "precision mediump float;" +
+    "varying vec2 vTextureCoord;" +
+    "void main()" +
+    "{" +
+    "    float len = length(vTextureCoord); " +
+    "    if(len < 0.5) " +
+    "        gl_FragColor = vec4(vTextureCoord + 0.5, 0.0, 1.0);" +
+    "    else " +
+	"    { " +
+	"       float alphaVal = 0.0; " +
+	"       if(len < 0.7){ " +
+	"           alphaVal = (0.7 - len) / 0.2; " +
+	"           gl_FragColor = vec4(vTextureCoord + 0.5, 0.0, alphaVal); " +
+	"       }else { " + 
+	"           gl_FragColor = vec4(0.0,0.0,0.0,0.0);" +
+	"       }"+
+	"    }" +
+    "}";
+	webglInit();
+	shaderInitWithVertexAndFragmentShader(vsh,fsh);
+	initShaderProgram();
+		
+	for(var i=0;i<particleNumber;i++)
+	{
+		var center = {};
+		center.x = Math.random();
+		center.y = Math.random();
+        if(Math.floor(Math.random()*2) != 0){center.x = center.x * -1.0;}
+        if(Math.floor(Math.random()*2) != 0){center.y = center.y * -1.0;}
+		var radius = (0.1 + Math.random()) * 0.05;
+		var vertices = 
+   		 [
+            center.x + radius, center.y + radius,
+            center.x + radius, center.y - radius,
+            center.x - radius, center.y + radius,
+            center.x + radius, center.y - radius,
+            center.x - radius, center.y + radius,
+            center.x - radius, center.y - radius
+        ];
+        var textureCoords =[-1.0,-1.0,
+                            -1.0,1.0,
+                            1.0,-1.0,
+                            -1.0,1.0,
+                            1.0,-1.0,
+                            1.0,1.0];
+        for(var j = 0; j<vertices.length;j++)
+            particleDatas.push(vertices[j]);
+        for(var j = 0; j<textureCoords.length;j++)
+            particleTexcoords.push(textureCoords[j]);
+	}
+    var buffer = glContext.createBuffer();
+	glContext.bindBuffer(glContext.ARRAY_BUFFER,buffer);
+	glContext.bufferData(glContext.ARRAY_BUFFER,new Float32Array(particleDatas),glContext.STATIC_DRAW);
+	glContext.enableVertexAttribArray(v4PositionIndex);
+	glContext.vertexAttribPointer(v4PositionIndex,2,glContext.FLOAT,false,0,0);
+    var texcoordBuffer = glContext.createBuffer();
+    glContext.bindBuffer(glContext.ARRAY_BUFFER,texcoordBuffer);
+    glContext.bufferData(glContext.ARRAY_BUFFER,new Float32Array(particleTexcoords),glContext.STATIC_DRAW);
+	glContext.enableVertexAttribArray(v4TextcoordIndex);
+	glContext.vertexAttribPointer(v4TextcoordIndex,2,glContext.FLOAT,false,0,0);
+}
+
+	</script>
+</head>
+
+
+<body onload="InitializeAllData()">
+<div width="1400px" height="1400px">
+<div id="container">
+<canvas id="glView" width="1400px" height="1400px">Your browser doesn't support canvas.</canvas>
+</div>
+</div>
+<button onclick="renderCircle({x:100,y:100},50)">ClickMe</button>
+
+</body>
+
+</html>
