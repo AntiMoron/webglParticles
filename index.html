@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-
+<!-- @Author Meoja -->
 <html>
 <head>
 	<title>Test ParticleGL</title>
@@ -139,23 +139,24 @@ function InitializeAllData()
 	glContext.bufferData(glContext.ARRAY_BUFFER,new Float32Array(particleDatas),glContext.STATIC_DRAW);
 	glContext.enableVertexAttribArray(v4PositionIndex);
 	glContext.vertexAttribPointer(v4PositionIndex,2,glContext.FLOAT,false,0,0);
-    var texcoordBuffer = glContext.createBuffer();
-    glContext.bindBuffer(glContext.ARRAY_BUFFER,texcoordBuffer);
-    glContext.bufferData(glContext.ARRAY_BUFFER,new Float32Array(particleTexcoords),glContext.STATIC_DRAW);
+	var texcoordBuffer = glContext.createBuffer();
+	glContext.bindBuffer(glContext.ARRAY_BUFFER,texcoordBuffer);
+	glContext.bufferData(glContext.ARRAY_BUFFER,new Float32Array(particleTexcoords),glContext.STATIC_DRAW);
 	glContext.enableVertexAttribArray(v4TextcoordIndex);
 	glContext.vertexAttribPointer(v4TextcoordIndex,2,glContext.FLOAT,false,0,0);
+	renderWebGL();
 }
 	</script>
 </head>
 
 
 <body onload="InitializeAllData()">
+<button onclick="renderWebGL()">ClickMe</button>
 <div width="1400px" height="1400px">
 <div id="container">
 <canvas id="glView" width="1400px" height="1400px">Your browser doesn't support canvas.</canvas>
 </div>
 </div>
-<button onclick="renderWebGL()">ClickMe</button>
 
 </body>
 
