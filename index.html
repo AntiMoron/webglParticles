@@ -15,7 +15,7 @@ var screenWidth = 1400;
 var screenHeight = 1400;
 var particleDatas = [];
 var particleTexcoords = [];
-var particleNumber = 5000;
+var particleNumber = 1000;
 
 function webglInit(){
 	var myCanvasObject = document.getElementById("glView");
@@ -64,17 +64,12 @@ function initShaderProgram(){
 
     v4TextcoordIndex = glContext.getAttribLocation(programObject,"inputTextureCoord");
     glContext.enableVertexAttribArray(v4TextcoordIndex);
-    glContext.vertexAttribPointer(v4TextcoordIndex,2,glContext.FLOAT,false,0,0);
 }
-
-function renderWebGL(vLen){
+    
+function renderWebGL(){
     glContext.clearColor(0.0,0.0,0.0,0.0);
 	glContext.clear(glContext.COLOR_BUFFER_BIT);
 	glContext.drawArrays(glContext.TRIANGLES,0,particleDatas.length / 2);
-}
-function renderCircle()
-{
-	renderWebGL();
 }
 
 function InitializeAllData()
@@ -150,7 +145,6 @@ function InitializeAllData()
 	glContext.enableVertexAttribArray(v4TextcoordIndex);
 	glContext.vertexAttribPointer(v4TextcoordIndex,2,glContext.FLOAT,false,0,0);
 }
-
 	</script>
 </head>
 
@@ -161,7 +155,7 @@ function InitializeAllData()
 <canvas id="glView" width="1400px" height="1400px">Your browser doesn't support canvas.</canvas>
 </div>
 </div>
-<button onclick="renderCircle({x:100,y:100},50)">ClickMe</button>
+<button onclick="renderWebGL()">ClickMe</button>
 
 </body>
 
